@@ -8,6 +8,13 @@ export const AuthContext = createContext({});
 function AuthProvider({ children }){
   const [data, setData] = useState({});
 
+
+  function signOut() {
+    localStorage.removeItem("@rocketnotes:user");
+    localStorage.removeItem("@rocketnotes:token");
+    setData({});
+  }
+
   async function signIn({ email, password}) {
     try{
       const response = await api.post("/sessions",{ email, password});
@@ -16,7 +23,7 @@ function AuthProvider({ children }){
       localStorage.setItem("@rocketnotes:user",JSON.stringify(user));
       localStorage.setItem("@rocketnotes:token", token);
 
-      api.defaults.headers.authorization = `Bearer ${token}`;
+      api.defaults.headers.common = `Bearer ${token}`;
       setData({ user, token});
 
     }catch(error){
@@ -33,7 +40,7 @@ function AuthProvider({ children }){
     const user = localStorage.getItem("@rocketnotes:user");
 
     if(token && user){
-      api.defaults.headers.authorization = `Bearer ${token}`;
+      api.defaults.headers.common = `Bearer ${token}`;
 
       setData({
         token,
@@ -42,7 +49,11 @@ function AuthProvider({ children }){
     }
   },[]); 
   return(
-    <AuthContext.Provider value={{ signIn, user: data.user }}>
+    <AuthContext.Provider value={{ 
+      signIn,
+      signOut,
+      user: data.user
+      }}>
       {children}
     </AuthContext.Provider>
 
